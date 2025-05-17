@@ -9,8 +9,10 @@ int main(void)
 
     Transaction data;
 
-    Account t;
-    cout << t << endl;
+    Account t; 
+    t.load("mjh"); 
+    
+    cout << t << endl; 
 
     return 0;
 }

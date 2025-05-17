@@ -1,133 +1,5 @@
 #include "../../includes/account/account.h"
 
-// TODO - @defgroup: Functions
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Verify(const ofstream&)
-bool Account::Verify(const ofstream &output)
-{
-    if (output)
-        return true;
-
-    cerr << "<error>=file_opening" << endl;
-    return false;
-}
-
-//^ @protected: Verify(const ifstream&)
-bool Account::Verify(const ifstream &input)
-{
-    if (input)
-        return true;
-
-    cerr << "<error>=file_opening" << endl;
-    return false;
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Hash(const string)
-const string Account::Hash(const string input)
-{
-    //& @def: run input string through hash
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256((unsigned char *)input.c_str(), input.size(), hash);
-
-    //& @def: convert hashed char to a string
-    stringstream hash_string;
-    for (unsigned char c : hash)
-    {
-        hash_string << hex << setw(2) << setfill('x') << int(c);
-    }
-
-    return string(hash_string.str());
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Save(void)
-bool Account::Save(void)
-{
-    ofstream savefile("resources/.cache/.cache.csv", ios::app);
-    if (!Verify(savefile))
-        return false;
-    else
-    {
-        savefile << username << "," << passkey << endl;
-        savefile.close();
-        return true;
-    }
-
-    savefile.close();
-    return false;
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Load(const string)
-bool Account::Load(const string target)
-{
-    //& @note: file verification
-    ifstream savefile("resources/.cache/.cache.csv");
-    if (!Verify(savefile))
-        return false;
-    else if (!Search(target))
-        return false;
-
-    //& @note: file parsing
-    string line;
-    while (getline(savefile, line))
-    {
-        stringstream row(line);
-        string name, key;
-
-        //* @note: loading hit
-        if (getline(row, name, ',') && target == name && getline(row, key))
-        {
-            username = name;
-            passkey = key;
-            savefile.close();
-            return true;
-        }
-    }
-
-    //! @note: loading miss
-    savefile.close();
-    return false;
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Wipe(void)
-bool Account::Wipe(void)
-{
-    return false;
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Search(const string)
-bool Account::Search(const string target)
-{
-    //& @note: file verification
-    ifstream savefile("resources/.cache/.cache.csv");
-    if (!Verify(savefile))
-        return false;
-
-    //& @note: file parsing
-    string line;
-    while (getline(savefile, line))
-    {
-        stringstream row(line);
-        string name;
-
-        //* @note: search hit
-        if (getline(row, name, ',') && target == name)
-        {
-            savefile.close();
-            return true;
-        }
-    }
-
-    //! @note: search miss
-    savefile.close();
-    return false;
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 //~ @defgroup: Resources
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //* @public: Account(const string, const string)
@@ -163,10 +35,10 @@ bool Account::load(const string target)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @public: wipe(void)
-bool Account::wipe(void)
+//* @public: remove(const string)
+bool Account::remove(const string target)
 {
-    if (Wipe())
+    if (Remove(target))
         return true;
 
     return false;
@@ -226,5 +98,161 @@ ostream &operator<<(ostream &out, const Account &account)
         << "Passkey: " << account.passkey;
 
     return out;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// TODO - @defgroup: Functions
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//^ @protected: Verify(const ofstream&)
+bool Account::Verify(const ofstream &output)
+{
+    if (output)
+        return true;
+
+    cerr << "<error>=file_opening" << endl;
+    return false;
+}
+
+//^ @protected: Verify(const ifstream&)
+bool Account::Verify(const ifstream &input)
+{
+    if (input)
+        return true;
+
+    cerr << "<error>=file_opening" << endl;
+    return false;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//^ @protected: Hash(const string)
+const string Account::Hash(const string input)
+{
+    //& @def: run input string through hash
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256((unsigned char *)input.c_str(), input.size(), hash);
+
+    //& @def: convert hashed char to a string
+    stringstream hash_string;
+    for (unsigned char c : hash)
+    {
+        hash_string << hex << setw(2) << setfill('x') << int(c);
+    }
+
+    return string(hash_string.str());
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//^ @protected: Save(void)
+bool Account::Save(void)
+{
+    //& @note: file verification
+    ofstream tempfile("resources/.cache/.temp.csv");
+    ifstream savefile("resources/.cache/.cache.csv");
+    if (!Verify(savefile) || !Verify(tempfile))
+        return false;
+
+    //& @note: begin file parsing
+    string current_line;
+    while (getline(savefile, current_line))
+    {
+        //* @note: write currentline data if username != this line
+        if (current_line.find(username + ",") == string::npos)
+            tempfile << current_line << endl;
+    }
+
+    tempfile << username << "," << passkey << endl;
+
+    savefile.close();
+    tempfile.close();
+    rename("resources/.cache/.temp.csv", "resources/.cache/.cache.csv");
+
+    return true;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//^ @protected: Load(const string)
+bool Account::Load(const string target)
+{
+    //& @note: file verification
+    ifstream savefile("resources/.cache/.cache.csv");
+    if (!Verify(savefile))
+        return false;
+    else if (!Search(target))
+        return false;
+
+    //& @note: file parsing
+    string line;
+    while (getline(savefile, line))
+    {
+        stringstream row(line);
+        string name, key;
+
+        //* @note: loading hit
+        if (getline(row, name, ',') && target == name && getline(row, key))
+        {
+            username = name;
+            passkey = key;
+            savefile.close();
+            return true;
+        }
+    }
+
+    //! @note: loading miss
+    savefile.close();
+    return false;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//^ @protected: Remove(const string)
+bool Account::Remove(const string target)
+{
+    //& @note: file verification
+    ofstream tempfile("resources/.cache/.temp.csv");
+    ifstream savefile("resources/.cache/.cache.csv");
+    if (!Verify(savefile) || !Verify(tempfile))
+        return false;
+
+    //& @note: begin file parsing
+    string current_line;
+    while (getline(savefile, current_line))
+    {
+        if (current_line.find(target + ",") == string::npos)
+            tempfile << current_line << endl; 
+    }
+
+    savefile.close();
+    tempfile.close();
+    rename("resources/.cache/.temp.csv", "resources/.cache/.cache.csv");
+
+    return true;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//^ @protected: Search(const string)
+bool Account::Search(const string target)
+{
+    //& @note: file verification
+    ifstream savefile("resources/.cache/.cache.csv");
+    if (!Verify(savefile))
+        return false;
+
+    //& @note: file parsing
+    string line;
+    while (getline(savefile, line))
+    {
+        stringstream row(line);
+        string name;
+
+        //* @note: search hit
+        if (getline(row, name, ',') && target == name)
+        {
+            savefile.close();
+            return true;
+        }
+    }
+
+    //! @note: search miss
+    savefile.close();
+    return false;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
