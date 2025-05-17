@@ -22,25 +22,47 @@ int driver(int argc, char **argv)
     {
         string arg = argv[i];
 
+        //* @defgroup: General Functions
+        //~ @fn: Program Version
         if (arg == "-v" || arg == "--version")
             cout << _version << endl;
-
-        else if (arg == "-h" || arg == "--help")
+        //~ @fn: Program Usage
+        else if (arg == "-h" || arg == "--help" || arg == "--usage")
             usage();
 
+        //* @defgroup: Account Functions
+        //~ @fn: Saving
         else if (arg == "-s" || arg == "save")
         {
+            
         }
 
+        //~ @fn: Loading
         else if (arg == "-l" || arg == "--load")
         {
             string username;
             if (argv[i + 1])
                 username = argv[i + 1];
 
-            account.load(username);
-            cout << account << endl;
+            if (account.load(username))
+                cout << "Account Loading Status: <success>" << endl;
+            else
+                cerr << "Account Loading Status: <error>" << endl;
         }
+        //~ @fn: Deleting
+        else if (arg == "-d" || arg == "--delete")
+        {
+            string target;
+            if (argv[i + 1])
+                target = argv[i + 1];
+
+            if (account.remove(target))
+                cout << "Account Removal Status: <success>" << endl;
+            else
+                cerr << "Account Removal Status: <error>" << endl;
+        }
+
+        //* @defgroup: BitBank Access Functions
     }
 
     return 0;
@@ -61,5 +83,5 @@ int main(int argc, char *argv[])
 
     // return 0;
 
-    return driver(argc, argv); 
+    return driver(argc, argv);
 }

@@ -106,7 +106,7 @@ ostream &operator<<(ostream &out, const Account &account)
 //^ @protected: Verify(const ofstream&)
 bool Account::Verify(const ofstream &output)
 {
-    if (output)
+    if (output.is_open())
         return true;
 
     cerr << "<error>=file_opening" << endl;
@@ -116,7 +116,7 @@ bool Account::Verify(const ofstream &output)
 //^ @protected: Verify(const ifstream&)
 bool Account::Verify(const ifstream &input)
 {
-    if (input)
+    if (input.is_open())
         return true;
 
     cerr << "<error>=file_opening" << endl;
