@@ -18,13 +18,13 @@
 using namespace std;
 
 //~ @def: Macros
-#define _ver "BitBank v0.0.1" //& @macro: _ver
+#define _version "BitBank v0.0.1" //& @macro: _version
 
 //~ @def: Enums
 enum Type //? @enum: Type
 {
     infusion,
-    withdrawal, 
+    withdrawal,
     null
 };
 

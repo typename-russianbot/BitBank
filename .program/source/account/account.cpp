@@ -147,7 +147,7 @@ bool Account::Save(void)
 {
     //& @note: file verification
     ofstream tempfile("resources/.cache/.temp.csv");
-    ifstream savefile("resources/.cache/.cache.csv");
+    ifstream savefile("resources/.cache/.save.csv");
     if (!Verify(savefile) || !Verify(tempfile))
         return false;
 
@@ -164,7 +164,7 @@ bool Account::Save(void)
 
     savefile.close();
     tempfile.close();
-    rename("resources/.cache/.temp.csv", "resources/.cache/.cache.csv");
+    rename("resources/.cache/.temp.csv", "resources/.cache/.save.csv");
 
     return true;
 }
@@ -174,7 +174,8 @@ bool Account::Save(void)
 bool Account::Load(const string target)
 {
     //& @note: file verification
-    ifstream savefile("resources/.cache/.cache.csv");
+    ifstream savefile("resources/.cache/.save.csv");
+
     if (!Verify(savefile))
         return false;
     else if (!Search(target))
@@ -190,9 +191,13 @@ bool Account::Load(const string target)
         //* @note: loading hit
         if (getline(row, name, ',') && target == name && getline(row, key))
         {
+            ofstream cachefile("resources/.cache/.cache.csv");
             username = name;
             passkey = key;
+            cachefile << username << "," << passkey << endl;
+
             savefile.close();
+            cachefile.close();
             return true;
         }
     }
@@ -208,7 +213,7 @@ bool Account::Remove(const string target)
 {
     //& @note: file verification
     ofstream tempfile("resources/.cache/.temp.csv");
-    ifstream savefile("resources/.cache/.cache.csv");
+    ifstream savefile("resources/.cache/.save.csv");
     if (!Verify(savefile) || !Verify(tempfile))
         return false;
 
@@ -217,12 +222,12 @@ bool Account::Remove(const string target)
     while (getline(savefile, current_line))
     {
         if (current_line.find(target + ",") == string::npos)
-            tempfile << current_line << endl; 
+            tempfile << current_line << endl;
     }
 
     savefile.close();
     tempfile.close();
-    rename("resources/.cache/.temp.csv", "resources/.cache/.cache.csv");
+    rename("resources/.cache/.temp.csv", "resources/.cache/.save.csv");
 
     return true;
 }
@@ -232,7 +237,7 @@ bool Account::Remove(const string target)
 bool Account::Search(const string target)
 {
     //& @note: file verification
-    ifstream savefile("resources/.cache/.cache.csv");
+    ifstream savefile("resources/.cache/.save.csv");
     if (!Verify(savefile))
         return false;
 
