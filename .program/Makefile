@@ -1,5 +1,5 @@
 CXX = g++
-CXX_FLAGS = -std=c++23 -Wall -Wextra -g
+CXX_FLAGS = -std=c++23 -Wall -g -lssl -lcrypto
 
 SRC = $(shell find source -name '*.cpp')
 OBJ = $(patsubst source/%.cpp, build/%.o, $(SRC))

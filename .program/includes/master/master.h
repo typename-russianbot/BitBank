@@ -1,5 +1,8 @@
-//* @author: mr-yellow
-
+////////////////////////////////////////////////////////////////////////////
+//~ @author: Mr. Yellow || Matthew J. Hong
+//~ Program 'BitBank' is a bank/money manager with the goal of cutting
+//~ out wasteful spending
+////////////////////////////////////////////////////////////////////////////
 #pragma once
 
 //~ @def: Dependencies
@@ -8,13 +11,32 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <string.h>
 #include <openssl/sha.h>
 #include <filesystem>
-
+#include <vector>
 using namespace std;
 
 //~ @def: Macros
-#define _ver "BitBank v0.0.1" //& @var: _ver
-#define _clear "\033[2J"      //& @var: _clear
+#define _ver "BitBank v0.0.1" //& @macro: _ver
+
+//~ @def: Enums
+enum Type //? @enum: Type
+{
+    infusion,
+    withdrawal, 
+    null
+};
 
 //~ @def: Functions
+////////////////////////////////////////////////////////////////////////////
+//^ @public: operator(ostream&, const Type&)
+//^ @def:
+
+ostream &operator<<(ostream &, const Type &);
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//^ @public: template()
+//^ @def: definition goes here
+
+////////////////////////////////////////////////////////////////////////////
