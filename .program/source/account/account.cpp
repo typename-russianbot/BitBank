@@ -59,9 +59,35 @@ bool Account::Save(void)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Load(void)
-bool Account::Load(void)
+//^ @protected: Load(const string)
+bool Account::Load(const string target)
 {
+    //& @note: file verification
+    ifstream savefile("resources/.cache/.cache.csv");
+    if (!Verify(savefile))
+        return false;
+    else if (!Search(target))
+        return false;
+
+    //& @note: file parsing
+    string line;
+    while (getline(savefile, line))
+    {
+        stringstream row(line);
+        string name, key;
+
+        //* @note: loading hit
+        if (getline(row, name, ',') && target == name && getline(row, key))
+        {
+            username = name;
+            passkey = key;
+            savefile.close();
+            return true;
+        }
+    }
+
+    //! @note: loading miss
+    savefile.close();
     return false;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,15 +112,12 @@ bool Account::Search(const string target)
     while (getline(savefile, line))
     {
         stringstream row(line);
-        string name, key;
+        string name;
 
         //* @note: search hit
-        if (getline(row, name, ',') && getline(row, key))
+        if (getline(row, name, ',') && target == name)
         {
-            username = name;
-            passkey = key;
             savefile.close();
-
             return true;
         }
     }
@@ -130,10 +153,10 @@ bool Account::save(void)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @public: load(void)
-bool Account::load(void)
+//* @public: load(const string)
+bool Account::load(const string target)
 {
-    if (Load())
+    if (Load(target))
         return true;
 
     return false;
@@ -200,7 +223,7 @@ const string Account::getPasskey(void)
 ostream &operator<<(ostream &out, const Account &account)
 {
     out << "Username: " << account.username << endl
-        << "Passkey: " << account.passkey << endl;
+        << "Passkey: " << account.passkey;
 
     return out;
 }
