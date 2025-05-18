@@ -1,4 +1,4 @@
-#include "../../includes/account/account.h"
+#include "../../includes/wrapper/wrapper.h"
 
 //& @fn: usage(void)
 void usage(void)
@@ -17,7 +17,6 @@ int driver(int argc, char **argv)
     if (argc == 1)
         usage();
 
-    string name;
     for (int i = 1; i < argc; i++)
     {
         string arg = argv[i];
@@ -32,11 +31,9 @@ int driver(int argc, char **argv)
 
         //* @defgroup: Account Functions
         //~ @fn: Saving
-        else if (arg == "-s" || arg == "save")
+        else if (arg == "-c" || arg == "--create")
         {
-            
         }
-
         //~ @fn: Loading
         else if (arg == "-l" || arg == "--load")
         {
@@ -71,17 +68,11 @@ int driver(int argc, char **argv)
 //& @fn: main(void)
 int main(int argc, char *argv[])
 {
-    // // //* @def: BitBank
-    // cout << "Welcome to BitBank!" << endl;
 
-    // Transaction data;
-
-    // Account t;
-    // t.load("999");
-
-    // cout << t << endl;
-
-    // return 0;
+    ifstream outfile("resources/.logs/export.csv");
+    Account t;
+    t.fetch(); 
+    t.exportData(outfile);
 
     return driver(argc, argv);
 }
