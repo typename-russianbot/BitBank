@@ -1,4 +1,5 @@
 #include "../../includes/wrapper/wrapper.h"
+#include "../../includes/data/date.h"
 
 //& @fn: usage(void)
 void usage(void)
@@ -68,11 +69,47 @@ int driver(int argc, char **argv)
 //& @fn: main(void)
 int main(int argc, char *argv[])
 {
+    // string date1 = "1/1/2001";
+    // string date2 = "10/1/2021";
+    // string date3 = "1/10/2021";
+    // string date4 = "10/10/2021";
+
+    // Date date;
+    // date.setDate(date4);
+
+    // cout << date << endl;
+
+    // date.setDate(date1);
+
+    // cout << date << endl;
+    // date.setDate(date2);
+
+    // cout << date << endl;
+    // date.setDate(date3);
+
+    // cout << date << endl;
 
     ifstream outfile("resources/.logs/export.csv");
     Account t;
-    t.fetch(); 
-    t.exportData(outfile);
+    t.importData(outfile);
 
-    return driver(argc, argv);
+    t.list();
+
+    //! move file from downloads proto-code
+    // filesystem::path downloads = filesystem::path(getenv("HOME")) / "Downloads/export.csv";
+    // cout << downloads << endl;
+    // filesystem::path cwd = filesystem::current_path() / "resources/.logs/logs.csv";
+
+    // try
+    // {
+    //     filesystem::rename(downloads, cwd);
+    //     cout << "file moved" << endl;
+    // }
+    // catch (const filesystem::filesystem_error &error)
+    // {
+    //     cerr << "<error>=" << error.what() << endl;
+    // }
+    //! end of proto code
+
+    // return driver(argc, argv);
 }

@@ -58,28 +58,30 @@ bool Account::search(const string target)
 //* @public: fetch(void)
 bool Account::fetch(void)
 {
-    if (ifstream("/home/mr-yellow/Downloads/export.csv"))
+    if (ifstream("~/Downloads/export.csv").is_open())
         cout << "export found" << endl;
 
     return true;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @public: exportData(const ifstream&)
-bool Account::exportData(ifstream &readfile)
+//* @public: sort(void)
+void Account::sort(void)
 {
-    if (!Verify(readfile))
-        return false;
 
-    string line;
-    while (getline(readfile, line))
+    return;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//* @public: list(void)
+void Account::list(void)
+{
+    for (int i = 1; i < static_cast<int>(container.size()); i++)
     {
-
-        cout << line << endl;
+        cout << container[i] << endl;
     }
 
-    readfile.close();
-    return true;
+    return;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -98,6 +100,63 @@ void Account::setPasskey(const string nKey)
 {
     this->passkey = Hash(nKey);
     return;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//* @public: importData(const ifstream&)
+bool Account::importData(ifstream &readfile)
+{
+    //! @note: file verification failed
+    if (!Verify(readfile))
+        return false;
+
+    ofstream logs("resources/.logs/logs.csv");
+
+    string line;
+    int line_num = 0;
+    while (getline(readfile, line))
+    {
+        //* @defgroup: data variables for parsing
+        stringstream currentline(line);
+        string s1, s2, s3, s4;
+        double amount;
+        Date date;
+
+        //& @note: grabs transaction date
+        getline(currentline, s1, ',');
+        CleanString(s1);
+        date.setDate(s1);
+
+        //& @note: grabs & discards empty param
+        getline(currentline, s2, ',');
+
+        //& @note: grabs transaction description
+        getline(currentline, s3, ',');
+        CleanString(s3);
+
+        //& @note: grabs transaction amount
+        getline(currentline, s4, ',');
+        CleanString(s4);
+        if (s4.empty())
+        {
+            getline(currentline, s4, ',');
+            CleanString(s4);
+        }
+
+        //& @note: set type
+        CleanString(s4);
+        stringstream ss(s4);
+        ss >> amount;
+
+        if (amount < 0.0)
+            container.push_back(Transaction{Type::withdrawal, date, s3, amount});
+        else
+            container.push_back(Transaction{Type::deposit, date, s3, amount});
+    }
+
+    readfile.close();
+    logs.close();
+    return true;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -129,46 +188,7 @@ ostream &operator<<(ostream &out, const Account &account)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// TODO - @defgroup: Functions
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Verify(const ofstream&)
-bool Account::Verify(const ofstream &output)
-{
-    if (output.is_open())
-        return true;
-
-    cerr << "<error>=file_opening" << endl;
-    return false;
-}
-
-//^ @protected: Verify(const ifstream&)
-bool Account::Verify(const ifstream &input)
-{
-    if (input.is_open())
-        return true;
-
-    cerr << "<error>=file_opening" << endl;
-    return false;
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Hash(const string)
-const string Account::Hash(const string input)
-{
-    //& @def: run input string through hash
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256((unsigned char *)input.c_str(), input.size(), hash);
-
-    //& @def: convert hashed char to a string
-    stringstream hash_string;
-    for (unsigned char c : hash)
-    {
-        hash_string << hex << setw(2) << setfill('x') << int(c);
-    }
-
-    return string(hash_string.str());
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//~ @defgroup: Protected Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //^ @protected: Save(void)
 bool Account::Save(void)
@@ -222,7 +242,6 @@ bool Account::Load(const string target)
             ofstream cachefile("resources/.cache/.cache.csv");
             username = name;
             passkey = key;
-            cachefile << username << "," << passkey << endl;
 
             savefile.close();
             cachefile.close();

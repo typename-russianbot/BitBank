@@ -6,27 +6,57 @@
 struct termios TerminalVisible, TerminalHidden;
 ////////////////////////////////////////////////////////////////////////////
 
-//~ @def: Functions
+//~ @defgroup: Functions
+
 ////////////////////////////////////////////////////////////////////////////
-//^ @public: operator(ostream&, const Type&)
-ostream &operator<<(ostream &out, const Type &type)
+//* @public: CleanString(string&)
+void CleanString(string &value)
 {
-    switch (type)
+    //& @def: removes the parenthesis around the original variables
+    if (value.size() >= 2 && value.front() == '"' && value.back() == '"')
+        value = value.substr(1, value.size() - 2);
+
+    return;
+}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//* @public: SearchString(const string)
+const string SearchString(const string);
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//* @public: Hash()
+const string Hash(const string text)
+{
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256((unsigned char *)text.c_str(), text.size(), hash);
+
+    stringstream toHash;
+    for (unsigned char character : hash)
     {
-    case infusion:
-        out << "Infusion";
-        break;
-
-    case withdrawal:
-        out << "Withdrawal";
-        break;
-
-    default:
-        out << "Null";
-        break;
+        toHash << hex << setw(2) << setfill('x') << int(character);
     }
 
-    return out;
+    return toHash.str();
+}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//* @public: Verify(const ofstream&)
+bool Verify(const ofstream &file)
+{
+    if (file.is_open())
+        return true;
+
+    return false;
+}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//* @public: Verify(const ifstream&)
+bool Verify(const ifstream &file)
+{
+    if (file.is_open())
+        return true;
+
+    return false;
 }
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -49,5 +79,57 @@ void ShowTerminal(void)
 {
     tcsetattr(STDIN_FILENO, TCSANOW, &TerminalVisible);
     cout << endl;
+}
+////////////////////////////////////////////////////////////////////////////
+
+//~ @defgroup: Overloads
+////////////////////////////////////////////////////////////////////////////
+//^ @public: operator(ostream&, const Type&)
+ostream &operator<<(ostream &out, const Type &type)
+{
+    switch (type)
+    {
+    case deposit:
+        out << "Deposit";
+        break;
+
+    case withdrawal:
+        out << "Withdrawal";
+        break;
+
+    case food:
+        out << "Food";
+        break;
+
+    case transportation:
+        out << "Transportation";
+        break;
+
+    case subscription:
+        out << "Subscription";
+        break;
+
+    case online:
+        out << "Online";
+        break;
+
+    case healthcare:
+        out << "Healthcare";
+        break;
+
+    case insurance:
+        out << "Insurance";
+        break;
+
+    case groceries:
+        out << "Groceries";
+        break;
+
+    default:
+        out << "None";
+        break;
+    }
+
+    return out;
 }
 ////////////////////////////////////////////////////////////////////////////
