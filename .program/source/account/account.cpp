@@ -4,7 +4,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //* @public: Account(const string, const string)
 Account::Account(const string user, const string key) : username(user), passkey(Hash(key)) { return; }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //* @public: Account(const Account&)
 Account::Account(const Account &) { return; }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,18 +59,93 @@ bool Account::search(const string target)
 //* @public: fetch(void)
 bool Account::fetch(void)
 {
-    if (ifstream("~/Downloads/export.csv").is_open())
-        cout << "export found" << endl;
 
-    return true;
+    filesystem::path downloads = filesystem::path(getenv("HOME")) / "Downloads/export.csv";
+    cout << downloads << endl;
+
+    filesystem::path cwd = filesystem::current_path() / "resources/.logs/export" / username / ".csv";
+
+    try
+    {
+        filesystem::rename(downloads, cwd);
+        cout << "file moved" << endl;
+        return true;
+    }
+    catch (const filesystem::filesystem_error &error)
+    {
+        cerr << "<error>=export_file_missing" << endl;
+        return false;
+    }
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @public: sort(void)
-void Account::sort(void)
+//* @public: import(const ifstream&)
+bool Account::import(ifstream &readfile)
 {
+    //! @note: file verification failed
+    if (!Verify(readfile))
+        return false;
 
-    return;
+    ofstream logs("resources/.logs/logs.csv");
+
+    string line;
+    int line_num = 0;
+    while (getline(readfile, line))
+    {
+        if (line_num > 0)
+        {
+            //* @defgroup: data variables for parsing
+            stringstream currentline(line);
+            string s1, s2, s3, s4;
+            double amount;
+            Date date;
+
+            //& @note: grabs transaction date
+            getline(currentline, s1, ',');
+            CleanString(s1);
+            date.setDate(s1);
+
+            //& @note: grabs & discards empty param
+            getline(currentline, s2, ',');
+
+            //& @note: grabs transaction description
+            getline(currentline, s3, ',');
+            CleanString(s3);
+            CleanDescription(s3);
+
+            //& @note: grabs transaction amount
+            getline(currentline, s4, ',');
+            CleanString(s4);
+            if (s4.empty())
+            {
+                getline(currentline, s4, ',');
+                CleanString(s4);
+            }
+            amount = stod(s4);
+
+            //& @note: get transaction type
+            if (amount < 0.0)
+            {
+                container.push_back(Transaction{Type::withdrawal, date, s3, amount});
+                negative_balance += amount;
+            }
+            else
+            {
+                container.push_back(Transaction{Type::deposit, date, s3, amount});
+                positive_balance += amount;
+            }
+
+            net_balance += amount;
+        }
+
+        line_num++;
+    }
+    cout << line_num << endl;
+    cout << container.size() << endl;
+
+    readfile.close();
+    logs.close();
+    return true;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +157,72 @@ void Account::list(void)
         cout << container[i] << endl;
     }
 
+    return;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//~ @defgroup: Sorting Methods
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//* @public: sortByNewest(void)
+void Account::sortByNewest(void)
+{
+    for (size_t i = 1; i < container.size(); i++)
+    {
+        for (size_t j = 0; j < container.size(); j++)
+        {
+
+            if (container[i].getDate().year < container[j].getDate().year)
+            {
+                Transaction temp = container[i];
+                container[i] = container[j];
+                container[j] = temp;
+            }
+            else if (container[i].getDate().year == container[j].getDate().year && container[i].getDate().month < container[j].getDate().month)
+            {
+                Transaction temp = container[i];
+                container[i] = container[j];
+                container[j] = temp;
+            }
+            else if (container[i].getDate().year == container[j].getDate().year && container[i].getDate().month == container[j].getDate().month && container[i].getDate().day < container[j].getDate().day)
+            {
+                Transaction temp = container[i];
+                container[i] = container[j];
+                container[j] = temp;
+            }
+        }
+    }
+    return;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//* @public: sortByOldest(void)
+void Account::sortByOldest(void)
+{
+    for (size_t i = 0; i < container.size(); i++)
+    {
+        for (size_t j = 1; j < container.size(); j++)
+        {
+
+            if (container[i].getDate().year > container[j].getDate().year)
+            {
+                Transaction temp = container[i];
+                container[i] = container[j];
+                container[j] = temp;
+            }
+            else if (container[i].getDate().year == container[j].getDate().year && container[i].getDate().month > container[j].getDate().month)
+            {
+                Transaction temp = container[i];
+                container[i] = container[j];
+                container[j] = temp;
+            }
+            else if (container[i].getDate().year == container[j].getDate().year && container[i].getDate().month == container[j].getDate().month && container[i].getDate().day > container[j].getDate().day)
+            {
+                Transaction temp = container[i];
+                container[i] = container[j];
+                container[j] = temp;
+            }
+        }
+    }
     return;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,63 +242,6 @@ void Account::setPasskey(const string nKey)
 {
     this->passkey = Hash(nKey);
     return;
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @public: importData(const ifstream&)
-bool Account::importData(ifstream &readfile)
-{
-    //! @note: file verification failed
-    if (!Verify(readfile))
-        return false;
-
-    ofstream logs("resources/.logs/logs.csv");
-
-    string line;
-    int line_num = 0;
-    while (getline(readfile, line))
-    {
-        //* @defgroup: data variables for parsing
-        stringstream currentline(line);
-        string s1, s2, s3, s4;
-        double amount;
-        Date date;
-
-        //& @note: grabs transaction date
-        getline(currentline, s1, ',');
-        CleanString(s1);
-        date.setDate(s1);
-
-        //& @note: grabs & discards empty param
-        getline(currentline, s2, ',');
-
-        //& @note: grabs transaction description
-        getline(currentline, s3, ',');
-        CleanString(s3);
-
-        //& @note: grabs transaction amount
-        getline(currentline, s4, ',');
-        CleanString(s4);
-        if (s4.empty())
-        {
-            getline(currentline, s4, ',');
-            CleanString(s4);
-        }
-
-        //& @note: set type
-        CleanString(s4);
-        stringstream ss(s4);
-        ss >> amount;
-
-        if (amount < 0.0)
-            container.push_back(Transaction{Type::withdrawal, date, s3, amount});
-        else
-            container.push_back(Transaction{Type::deposit, date, s3, amount});
-    }
-
-    readfile.close();
-    logs.close();
-    return true;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

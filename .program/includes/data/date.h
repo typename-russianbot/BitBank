@@ -9,6 +9,7 @@ private:
     int month; //* @var: month
     int day;   //* @var: day
     int year;  //* @var: year
+    friend class Account; 
 
 public:
     //~ @defgroup: Resources

@@ -1,4 +1,5 @@
 #include "../../includes/data/transaction.h"
+#include <termios.h>
 
 //~ @defgroup: Resources
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,7 +84,7 @@ void Transaction::setAmount(const double nAmount)
 //* @public: operator<<(ostream&, const Data&)
 ostream &operator<<(ostream &out, const Transaction &data)
 {
-    out << "| " << data.date << " | " << data.type << " | " << data.description << " | " << data.amount << " |";
+    out << data.date << "\t||\t" << data.type << " \t||\t\t" << data.amount << "\t\t||\t" << data.description;
 
     return out;
 }

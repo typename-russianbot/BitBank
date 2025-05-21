@@ -21,8 +21,7 @@ Date::~Date(void) { return; }
 void Date::setDate(const string input)
 {
     int slashPos[2] = {0, 0};
-    //& @def: string format in .csv -- month/day/year --
-    for (int i = 0; i < input.size() - 1; i++)
+    for (int i = 0; i < static_cast<int>(input.size() - 1); i++)
     {
         if (input[i] == '/' && slashPos[0] == 0)
             slashPos[0] = i;
@@ -41,7 +40,7 @@ void Date::setDate(const string input)
         d += input[i];
     }
 
-    for (int i = slashPos[1] + 1; i <= input.size(); i++)
+    for (int i = slashPos[1] + 1; i <= static_cast<int>(input.size()); i++)
     {
         y += input[i];
     }
