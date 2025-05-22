@@ -23,12 +23,12 @@ void CleanString(string &value)
 //* @public: CleanDescription(string&)
 void CleanDescription(string &desc)
 {
-    //& @def: find first 
+    //& @def: find first
     size_t posA = desc.find_first_of("-");
     if (posA != string::npos)
         desc = desc.substr(posA + 2);
 
-    size_t posB = desc.find_first_of("-");
+    size_t posB = desc.find_last_of("-");
     if (posB != string::npos)
         desc = desc.substr(0, posB + 1);
 

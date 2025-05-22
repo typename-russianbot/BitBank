@@ -19,7 +19,7 @@ Account::~Account(void) { return; }
 //* @public: save(void)
 bool Account::save(void)
 {
-    if (Save())
+    if (saveAccount() && saveTransactions())
         return true;
 
     return false;
@@ -63,7 +63,7 @@ bool Account::fetch(void)
     filesystem::path downloads = filesystem::path(getenv("HOME")) / "Downloads/export.csv";
     cout << downloads << endl;
 
-    filesystem::path cwd = filesystem::current_path() / "resources/.logs/export" / username / ".csv";
+    filesystem::path cwd = filesystem::current_path() / "resources/.logs/export.csv";
 
     try
     {
@@ -267,7 +267,9 @@ const string Account::getPasskey(void)
 ostream &operator<<(ostream &out, const Account &account)
 {
     out << "Username: " << account.username << endl
-        << "Passkey: " << account.passkey;
+        << "+Balance: \t" << account.positive_balance << endl
+        << "-Balance: \t" << account.negative_balance << endl
+        << "Net Balance: \t" << account.net_balance << endl;
 
     return out;
 }
@@ -275,12 +277,13 @@ ostream &operator<<(ostream &out, const Account &account)
 
 //~ @defgroup: Protected Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//^ @protected: Save(void)
-bool Account::Save(void)
+//^ @protected: saveAccount(void)
+bool Account::saveAccount(void)
 {
+    ofstream tempfile("resources/.cache/.temp.csv"); //& @var: tempfile
+    ifstream savefile("resources/.cache/.save.csv"); //& @var: savefile
+
     //& @note: file verification
-    ofstream tempfile("resources/.cache/.temp.csv");
-    ifstream savefile("resources/.cache/.save.csv");
     if (!Verify(savefile) || !Verify(tempfile))
         return false;
 
@@ -294,13 +297,35 @@ bool Account::Save(void)
     }
 
     tempfile << username << "," << passkey << endl;
-
+    rename("resources/.cache/.temp.csv", "resources/.cache/.save.csv");
     savefile.close();
     tempfile.close();
-    rename("resources/.cache/.temp.csv", "resources/.cache/.save.csv");
 
     return true;
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//^ @protected: saveTransactions(void)
+bool Account::saveTransactions(void)
+{
+    ifstream tempfile("resources/.logs/export.csv");           //& @var: tempfile
+    ofstream savefile("resources/.logs/" + username + ".csv"); //& @var: savefile
+
+    //& @note: file verification
+    if (!Verify(tempfile) || !Verify(savefile))
+        return false;
+
+    string current_line;
+    while (getline(tempfile, current_line))
+    {
+        savefile << current_line << endl;
+    }
+
+    return true;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//^ @protected: cache(void)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //^ @protected: Load(const string)
@@ -325,11 +350,13 @@ bool Account::Load(const string target)
         if (getline(row, name, ',') && target == name && getline(row, key))
         {
             ofstream cachefile("resources/.cache/.cache.csv");
-            username = name;
-            passkey = key;
+            cachefile << name << "," << key << endl;
+            ifstream logfile("resources/.logs/" + username + ".csv");
+            import(logfile);
 
             savefile.close();
             cachefile.close();
+            logfile.close();
             return true;
         }
     }

@@ -26,44 +26,50 @@ int driver(int argc, char **argv)
         string arg = argv[i];
 
         //* @defgroup: General Functions
-        //~ @fn: Program Version
+        //^ @fn: Program Version
         if (arg == "-v" || arg == "--version")
             cout << _version << endl;
-        //~ @fn: Program Usage
+
+        //^ @fn: Program Usage
         else if (arg == "-h" || arg == "--help" || arg == "--usage")
             usage();
 
         //* @defgroup: Account Functions
-        //~ @fn: Saving
+        //^ @fn: save
         else if (arg == "-c" || arg == "--create")
-        {
-        }
-        //~ @fn: Loading
+            break;
+
+        //^ @fn: load
         else if (arg == "-l" || arg == "--load")
-        {
-            string username;
-            if (argv[i + 1])
-                username = argv[i + 1];
+            break;
 
-            if (account.load(username))
-                cout << "Account Loading Status: <success>" << endl;
-            else
-                cerr << "Account Loading Status: <error>" << endl;
-        }
-        //~ @fn: Deleting
+        //^ @fn: delete
         else if (arg == "-d" || arg == "--delete")
-        {
-            string target;
-            if (argv[i + 1])
-                target = argv[i + 1];
+            break;
 
-            if (account.remove(target))
-                cout << "Account Removal Status: <success>" << endl;
-            else
-                cerr << "Account Removal Status: <error>" << endl;
-        }
+        //^ @fn: search
+        else if (arg == "-s" || arg == "--search")
+            break;
 
-        //* @defgroup: BitBank Access Functions
+        //^ @fn: fetch
+        else if (arg == "-f" || arg == "--fetch")
+            break;
+
+        //^ @fn: import
+        else if (arg == "--import")
+            break;
+
+        //^ @fn: list
+        else if (arg == "--list")
+            break;
+
+        //^ @fn: sort
+        else if (arg == "--sort")
+            break;
+
+        //^ @fn: edit
+        else if (arg == "--edit")
+            break;
     }
 
     return 0;
@@ -72,12 +78,16 @@ int driver(int argc, char **argv)
 //& @fn: main(void)
 int main(int argc, char *argv[])
 {
-    ifstream outfile("resources/.logs/export.csv");
-    Account t;
-    t.fetch();
-    t.import(outfile);
-    t.sortByNewest();
-    t.list();
+    // Account t;
+    // if (t.save())
+    // {
+    //     cout << "account saved" << endl;
+    // }
+
+    // if (t.load("mjh2001"))
+    //     cout << "account loaded" << endl;
+
+    // cout << t << endl;
 
     // return driver(argc, argv);
 }
