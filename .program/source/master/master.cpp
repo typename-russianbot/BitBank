@@ -6,84 +6,9 @@
 struct termios TerminalVisible, TerminalHidden;
 ////////////////////////////////////////////////////////////////////////////
 
-//& @defgroup: Functions
-////////////////////////////////////////////////////////////////////////////
-//^ @public: CleanString(string&)
-void CleanString(string &value)
-{
-    //& @def: removes the parenthesis around the original variables
-    if (value.size() >= 2 && value.front() == '"' && value.back() == '"')
-        value = value.substr(1, value.size() - 2);
-
-    return;
-}
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//^ @public: CleanDescription(string&)
-void CleanDescription(string &desc)
-{
-    //& @def: find first
-    size_t posA = desc.find_first_of("-");
-    if (posA != string::npos)
-        desc = desc.substr(posA + 2);
-
-    size_t posB = desc.find_last_of("-");
-    if (posB != string::npos)
-        desc = desc.substr(0, posB + 1);
-
-    return;
-}
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//^ @public: SearchString(const string)
-const Type SearchString(const string);
-// /////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//^ @public: Verify(const ofstream&)
-bool Verify(const ofstream &file)
-{
-    if (file.is_open())
-        return true;
-
-    return false;
-}
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//^ @public: Verify(const ifstream&)
-bool Verify(const ifstream &file)
-{
-    if (file.is_open())
-        return true;
-
-    return false;
-}
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//^ @fn: HideTerminal(void)
-void HideTerminal(void)
-{
-    tcgetattr(STDIN_FILENO, &TerminalVisible);
-
-    TerminalHidden = TerminalVisible;
-    TerminalHidden.c_lflag &= ~ECHO;
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &TerminalHidden);
-
-    return;
-}
-////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////
-//^ @fn: ShowTerminal(void)
-void ShowTerminal(void)
-{
-    tcsetattr(STDIN_FILENO, TCSANOW, &TerminalVisible);
-    cout << endl;
-}
-////////////////////////////////////////////////////////////////////////////
-
 //& @defgroup: Overloads
 ////////////////////////////////////////////////////////////////////////////
-//^ @public: operator(ostream&, const Type&)
+//^ @public: operator<<
 ostream &operator<<(ostream &out, const Type &type)
 {
     switch (type)
@@ -130,5 +55,41 @@ ostream &operator<<(ostream &out, const Type &type)
     }
 
     return out;
+}
+////////////////////////////////////////////////////////////////////////////
+
+//& @defgroup: Functions
+////////////////////////////////////////////////////////////////////////////
+bool Verify(const ofstream &file) //^ @fn: Verify(const ofstream&)
+{
+    if (file.is_open())
+        return true;
+
+    return false;
+}
+bool Verify(const ifstream &file) //^ @fn: Verify(const ifstream&)
+{
+    if (file.is_open())
+        return true;
+
+    return false;
+}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+void show(void) //^ @fn: show(void)
+{
+    tcsetattr(STDIN_FILENO, TCSANOW, &TerminalVisible);
+    cout << endl;
+}
+void hide(void) //^ @fn: hide(void)
+{
+    tcgetattr(STDIN_FILENO, &TerminalVisible);
+
+    TerminalHidden = TerminalVisible;
+    TerminalHidden.c_lflag &= ~ECHO;
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &TerminalHidden);
+
+    return;
 }
 ////////////////////////////////////////////////////////////////////////////

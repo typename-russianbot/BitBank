@@ -1,6 +1,6 @@
 #include "../../includes/account/account.h"
 
-//^ @defgroup: Resources
+//& @defgroup: Resources
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //* @public: Account(const string, const string)
 Account::Account(const string user, const string key) : username(user), passkey(Hash(key)) { return; }
@@ -14,14 +14,16 @@ Account::Account(const Account &) { return; }
 Account::~Account(void) { return; }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//^ @defgroup: Functions
+//~ @defgroup: Functions
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //* @public: save(void)
 bool Account::save(void)
 {
+    //* @note: saved
     if (Save())
         return true;
 
+    //! @note: failed to save
     return false;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -29,9 +31,11 @@ bool Account::save(void)
 //* @public: load(const string)
 bool Account::load(const string target)
 {
+    //* @note: loaded
     if (Load(target))
         return true;
 
+    //! @note: failed to load
     return false;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,9 +43,11 @@ bool Account::load(const string target)
 //* @public: remove(const string)
 bool Account::remove(const string target)
 {
+    //* @note: removed
     if (Remove(target))
         return true;
 
+    //! @note: failed to remove
     return false;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,35 +55,37 @@ bool Account::remove(const string target)
 //* @public: search(const string)
 bool Account::search(const string target)
 {
+    //* @note:target found
     if (Search(target))
         return true;
 
+    //! @note: failed to find target
     return false;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @public: fetch(void)
-bool Account::fetch(void)
-{
-    //? should automatically download the file from a url
-    filesystem::path downloads = filesystem::path(getenv("HOME")) / "Downloads/export.csv";
+// TODO @public: fetch(void) || replace w/ something like update || should implement
+//  bool Account::fetch(void)
+//  {
+//      //? should automatically download the file from a url
+//      filesystem::path downloads = filesystem::path(getenv("HOME")) / "Downloads/export.csv";
 
-    filesystem::path cwd = filesystem::current_path() / "resources/.logs/export.csv";
+//     filesystem::path cwd = filesystem::current_path() / "resources/.logs/export.csv";
 
-    try
-    {
-        filesystem::rename(downloads, cwd);
-        return true;
-    }
-    catch (const filesystem::filesystem_error &error)
-    {
-        cerr << "<error>=export_file_missing" << endl;
-        return false;
-    }
-}
+//     try
+//     {
+//         filesystem::rename(downloads, cwd);
+//         return true;
+//     }
+//     catch (const filesystem::filesystem_error &error)
+//     {
+//         cerr << "<error>=export_file_missing" << endl;
+//         return false;
+//     }
+// }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//^ @defgroup: Mutators
+//& @defgroup: Mutators
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //* @public: setUsername(const string)
 void Account::setUsername(const string nUser)
@@ -95,7 +103,7 @@ void Account::setPasskey(const string nKey)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//^ @defgroup: Accessors
+//& @defgroup: Accessors
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //* @public: getUsername(void)
 const string Account::getUsername(void) const
@@ -111,21 +119,20 @@ const string Account::getPasskey(void) const
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//^ @defgroup: Overloads
+//& @defgroup: Overloads
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //* @public: operator<<
 ostream &operator<<(ostream &out, const Account &account)
 {
-    out << "Username: " << account.username << endl
-        << "Net Balance: \t" << account.net_balance << endl;
+    out << "Username: " << account.username;
 
     return out;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//^ @defgroup: Helpers
+//& @defgroup: Helpers
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @protected: saveAccount(void)
+//^ @protected: Save(void)
 bool Account::Save(void)
 {
     ofstream tempfile("resources/.cache/.temp.csv"); //& @var: tempfile
@@ -153,7 +160,7 @@ bool Account::Save(void)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @protected: Load(const string)
+//^ @protected: Load(const string)
 bool Account::Load(const string target)
 {
     //& @note: file verification
@@ -189,14 +196,29 @@ bool Account::Load(const string target)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @protected: Remove(const string)
+//^ @protected: Remove(const string)
 bool Account::Remove(const string target)
 {
-    //& @note: file verification
-    ofstream tempfile("resources/.cache/.temp.csv");
     ifstream savefile("resources/.cache/.save.csv");
-    if (!Verify(savefile) || !Verify(tempfile))
+    ifstream cachefile("resources/.cache/.cache.csv");
+    ofstream tempfile("resources/.cache/.temp.csv");
+
+    //& @note: file verification
+    if (!Verify(savefile) || !Verify(cachefile))
         return false;
+
+    //& @note: if cache file isnt empty, check for a
+    if (!cachefile.eof())
+    {
+        string cache_line;
+        getline(cachefile, cache_line);
+        if (cache_line.find(target + ',') != string::npos)
+        {
+            ofstream tmp("resources/.cache/.tmp.csv");
+            rename("resources/.cache/.tmp.csv", "resources/.cache/.cache.csv");
+            tmp.close();
+        }
+    }
 
     //& @note: begin file parsing
     string current_line;
@@ -211,13 +233,14 @@ bool Account::Remove(const string target)
 
     //& @note: close both files
     savefile.close();
+    cachefile.close();
     tempfile.close();
 
     return true;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @protected: Search(const string)
+//^ @protected: Search(const string)
 bool Account::Search(const string target)
 {
     //& @note: file verification
@@ -246,7 +269,7 @@ bool Account::Search(const string target)
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//* @protected: Hash(const string)
+//^ @protected: Hash(const string)
 const string Account::Hash(const string text)
 {
     unsigned char hash[SHA256_DIGEST_LENGTH];

@@ -1,6 +1,6 @@
 #include "../../includes/data/data.h"
 
-//^ @defgroup: Resources
+//& @defgroup: Resources
 //////////////////////////////////////////////////////////////////////////////
 //* @public: Report(ifstream&)
 Report::Report(ifstream &readfile)
@@ -10,54 +10,50 @@ Report::Report(ifstream &readfile)
         return;
 
     string line;
-    int line_num = 0;
+    int n = 0;
     while (getline(readfile, line))
     {
-        if (line_num == 0)
-            readfile.ignore();
-
-        //* @defgroup: data variables for parsing
-        stringstream currentline(line);
-        string s1, s2, s3, s4;
-        double amount;
-        Date date;
-
-        //& @note: grabs transaction date
-        getline(currentline, s1, ',');
-        CleanString(s1);
-        date.setDate(s1);
-
-        //& @note: grabs & discards empty param
-        getline(currentline, s2, ',');
-
-        //& @note: grabs transaction description
-        getline(currentline, s3, ',');
-        CleanString(s3);
-        CleanDescription(s3);
-
-        //& @note: grabs transaction amount
-        getline(currentline, s4, ',');
-        CleanString(s4);
-        if (s4.empty())
+        if (n > 0)
         {
+            //* @defgroup: data variables for parsing
+            stringstream currentline(line);
+            string s1, s2, s3, s4;
+            double amount;
+            Date date;
+            int year;
+
+            //& @note: grabs transaction date
+            getline(currentline, s1, ',');
+            Trim(s1);
+            date.setDate(s1);
+
+            //& @note: grabs & discards empty param
+            getline(currentline, s2, ',');
+
+            //& @note: grabs transaction description
+            getline(currentline, s3, ',');
+            Trim(s3);
+            CleanDescription(s3);
+
+            //& @note: grabs transaction amount
             getline(currentline, s4, ',');
-            CleanString(s4);
-        }
-        amount = stod(s4);
+            Trim(s4);
+            if (s4.empty())
+            {
+                getline(currentline, s4, ',');
+                Trim(s4);
+            }
+            amount = stod(s4);
 
-        //& @note: get transaction type
-        if (amount < 0.0)
-        {
-            container.push_back(Transaction{Type::withdrawal, date, s3, amount});
-        }
-        else
-        {
-            container.push_back(Transaction{Type::deposit, date, s3, amount});
-        }
+            //& @note: get transaction type
+            if (amount < 0.0)
+                container.push_back(Transaction{Type::withdrawal, date, s3, amount});
+            else
+                container.push_back(Transaction{Type::deposit, date, s3, amount});
 
-        net_balance += amount;
-
-        line_num++;
+            net_balance += amount;
+        }
+        n++;
     }
 
     readfile.close();
@@ -72,26 +68,53 @@ Report::~Report(void)
 }
 //////////////////////////////////////////////////////////////////////////////
 
-//^ @defgroup: Functions || Displaying/Listing Functions go here
+//& @defgroup: Functions || Displaying/Listing Functions go here
 //////////////////////////////////////////////////////////////////////////////
 //* @public: list(void)
-//* @def: 
-
 void Report::list(void)
 {
-    for (int i = 0; i < static_cast<int>(container.size()); i++)
-    {
-        cout << container[i] << endl;
-    }
+    return;
 }
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 //* @public: sort(void)
-//* @def:
 //////////////////////////////////////////////////////////////////////////////
 
-//^ @defgroup: Overloads
+//& @defgroup: Helpers
 //////////////////////////////////////////////////////////////////////////////
-//* @public: operator=
-//* @def: '=' overload
+//^ @public: CleanString(string&)
+void Report::Trim(string &t)
+{
+    //& @def: removes the parenthesis around the original variables
+    if (t.size() >= 2 && t.front() == '"' && t.back() == '"')
+        t = t.substr(1, t.size() - 2);
+
+    return;
+}
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//^ @public: CleanDescription(string&)
+void Report::CleanDescription(string &d)
+{
+    //& @def: find firstF
+    size_t posA = d.find_first_of("-");
+    if (posA != string::npos)
+        d = d.substr(posA + 2);
+
+    size_t posB = d.find_last_of("-");
+    if (posB != string::npos)
+        d = d.substr(0, posB + 1);
+
+    return;
+}
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//^ @public: SearchDescription(string&)
+const Type Report::SearchDescription(string &d)
+{
+    return Type::deposit;
+}
+//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+//^ @public:
 //////////////////////////////////////////////////////////////////////////////
