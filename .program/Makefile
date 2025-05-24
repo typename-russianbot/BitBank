@@ -1,11 +1,14 @@
+#? GNU
 CXX = g++
 CXX_FLAGS = -std=c++23 -Wall -g -lssl -lcrypto
 
+#! FLAGS
 SRC = $(shell find source -name '*.cpp')
 OBJ = $(patsubst source/%.cpp, build/%.o, $(SRC))
 BLD = build
 exe = run
 
+#& FUNCTIONS
 all: $(exe)
 
 clean:
