@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Welcome to BitBank!"
+echo "BitBank -- v0.0.1"
